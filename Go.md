@@ -12,7 +12,7 @@
   - Setting up `dep` package manager (brief intro to `go mod` tool, which is still experimental)
     - Comparing with Maven (for Java)
     - Comparing with Bundle (for Ruby)
-    - Comparing with PyPi (for Python)
+    - Comparing with Pip (for Python)
 2. Syntax overview of Go programming language by writing your first `Hello, world!` API (1 day)
   - Introduction to closures (for Java)
   - Overview of Go standard library
