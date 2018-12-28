@@ -100,3 +100,4 @@
 - Green field projects or projects which aren't behind by more than 1 major version - no need of mucking around with old tech cause finding relevant resource becomes hard
 - Approach local NGOs to identify and solve their problems
 - Tools and libraries useful for a few client projects
+- Building a SASS product on top of existing open source libraries
