@@ -26,7 +26,7 @@
     - gorilla/mux (Routing)
     - negroni (Middleware)
     - logrus (Logging)
-    - gorm (Database)
+    - gorm/sqlx (Database)
     - crypto/bcrypt (Cryptography)
     - etc. (This depends on the audience and what they are looking for)
   - Deploying and packaging a Go application
