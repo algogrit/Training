@@ -39,6 +39,10 @@
     - xUnit style tests using built-in `testing` package (for Java)
     - BDD style tests using `ginkgo` & `gomega` (for Ruby)
     - Overview of `net/http/httptest`
+  - Benchmarking and profiling
+    - `go test -bench=.`
+    - `go test -cpuprofile cpu.prof -memprofile mem.prof -bench .`
+    - `import _ "net/http/pprof"`
 4. Working with Go in a distributed environment (3 days)
   - Go concurrency constructs (Teaser: https://www.youtube.com/watch?v=JqNpNpb5TlQ)
     - Go routines
