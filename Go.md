@@ -10,6 +10,7 @@
   - Setting up Visual Studio Code (alternatively setting up vim)
   - Getting delve debugger running (optional)
   - Setting up `dep` package manager (brief intro to `go mod` tool, which is still experimental)
+    - `go get -u github.com/golang/dep/cmd/dep`
     - Comparing with Maven (for Java)
     - Comparing with Bundle (for Ruby)
     - Comparing with Pip (for Python)
