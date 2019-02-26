@@ -53,7 +53,7 @@
     - Select
   - Overview of 3rd party distributed libraries
     - uber-go/zap for logging
-    - Jaeger for tracing
+    - Jaeger for tracing (https://blog.golang.org/http-tracing)
     - Hystrix for Latency & Fault tolerance
   - Go with Kubernetes
   - Go in a serverless environment
