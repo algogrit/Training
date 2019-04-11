@@ -15,7 +15,9 @@
   - Understanding signing
   - Configuring environments
   - CI / CD pipelines
-5. Integrating with Firebase or 3rd party APIs
+5. Third party SDK integrations
+  - Push notification services
+  - Integrating with Firebase or 3rd party APIs
 6. Concurrency in Swift
   - Understanding GCD and NSOperation
   - Delegates, protocols, notifications
@@ -34,9 +36,7 @@
 14. Reactive patterns in iOS
 15. Writing cleaner and maintainable code using Swift
   - Taming complexity
-16. Third party SDK integrations
-  - Push notification services
-17. Security
+16. Security
   - File data protection
   - Securing apps using biometrics
   - Implementing FaceID and TouchID
