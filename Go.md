@@ -33,6 +33,7 @@
   - Deploying and packaging a Go application
     - `go build`
     - `context.Context`
+    - Structuring a Go application
     - Writing a multi-step `docker` file to package the app
     - Other small tidbits (Teaser: https://www.youtube.com/watch?v=W95NLFtCMN0)
   - Debugging
