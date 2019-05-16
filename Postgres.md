@@ -23,6 +23,8 @@
 
 ### Expert in Postgres
 - Optimizing a query using EXPLAIN
+- Debugging issues & introduction to WAL
+- Postgres optimization options
 - Window functions
 - Clusters, Replication and Sharding
 - Partitioning
