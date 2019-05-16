@@ -1,8 +1,8 @@
 # PostgreSQL Training Course guidelines
 
 ## Prerequisites
-  https://www.elephantsql.com/ or local installation
-  https://www.pgadmin.org/ or psql
+  - https://www.elephantsql.com/ or local installation
+  - https://www.pgadmin.org/ or psql
 
 ## Course Structure
 
