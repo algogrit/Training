@@ -33,3 +33,8 @@
   * Labelled Checkboxes
   * Radio Buttons
   * Modules
+7. Optimization
+  * Performance
+    * Html.lazy
+    * Html.keyed
+  * Asset Size
