@@ -27,6 +27,7 @@
   * Task
 5. Building single page applications with Elm
   * HTTP
+    * Decoding JSON
   * Web Sockets
   * Propogating effects across the app
 6. Scaling the Elm architecture
