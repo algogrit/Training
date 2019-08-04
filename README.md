@@ -1,3 +1,3 @@
 # Training
 
-Planned training courses to be offered to students and for corporate-env.
+Planned training courses to be offered to students and for corporate environment.
