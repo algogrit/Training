@@ -34,5 +34,6 @@
 - Short intro to `rkt` [Optional] (1 hour)
 
 ## References
+- https://www.katacoda.com/courses/docker
 - https://training.play-with-docker.com/
 - https://github.com/docker/labs
