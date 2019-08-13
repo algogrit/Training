@@ -17,3 +17,8 @@
   `kubectl apply -f ...`
 
 * Logging and debugging apps running in Kubernetes
+* Advanced concepts
+  - Rollback
+  - Scaling
+  - Auto-scaling using controllers
+  - Volume Management
