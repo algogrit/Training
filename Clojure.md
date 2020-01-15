@@ -1,17 +1,17 @@
 Outline
 -------
 
-- Basic setup (2 hours)
+- Basic setup
   - Introduction to leiningen
   - Introduction to the repl
   - Writing an hello world application
-- Clojure Introduction (3 hours)
+- Clojure Introduction
   - Syntax overview
   - Functional programming paradigms
   - Closures
   - Vars, locals, loops and blocks
   - Homoiconicity, immutability & lazy evaluation
-- Building blocks (8 hours)
+- Building blocks
   - Types & Data structures in Clojure
     - Vectors, Maps, Queues and Sets
   - Functions, namespaces, destructuring
@@ -19,19 +19,19 @@ Outline
   - Precision and rationals
   - Namespaces
   - Protocols, Records and Types
-- Concurrency in Clojure (6 hours)
+- Concurrency in Clojure
   - Refs, Atoms, Vars
   - Futures and promises
   - Parallel programming
   - Intro to core.async
-- Polymorphism & Macros (3 hours)
+- Polymorphism & Macros
   - Method dispatch
   - Multimethods
   - Quotes and Unquotes
   - Macros and forms
   - Defining functions dynamically
-- Clojure in action (6 hours)
-  - Building a 'Hello, World!' application with ring, compojure and hiccup
+- Clojure in action
+  - Building a 'Hello, World!' API with ring, compojure and hiccup
   - Type hinting to increase performance
   - Intro to map/reduce paradigm
   - Higher-order functions
