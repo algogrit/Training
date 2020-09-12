@@ -10,3 +10,6 @@
 [submodule "Go"]
 	path = Go
 	url = git@github.com:AgarwalConsulting/Go-Training.git
+[submodule "Ruby"]
+	path = Ruby
+	url = git@github.com:AgarwalConsulting/ruby_training.git
