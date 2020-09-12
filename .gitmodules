@@ -16,3 +16,6 @@
 [submodule "Google-Dataflow"]
 	path = Google-Dataflow
 	url = git@github.com:AgarwalConsulting/Beam-DataFlow-Training.git
+[submodule "Java"]
+	path = Java
+	url = git@github.com:AgarwalConsulting/java-training.git
