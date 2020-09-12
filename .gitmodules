@@ -1,0 +1,3 @@
+[submodule "Clojure"]
+	path = Clojure
+	url = git@github.com:AgarwalConsulting/Clojure-Training.git
