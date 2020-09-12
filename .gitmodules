@@ -1,3 +1,6 @@
 [submodule "Clojure"]
 	path = Clojure
 	url = git@github.com:AgarwalConsulting/Clojure-Training.git
+[submodule "Docker"]
+	path = Docker
+	url = git@github.com:AgarwalConsulting/DockerTraining.git
