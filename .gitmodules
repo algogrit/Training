@@ -13,3 +13,6 @@
 [submodule "Ruby"]
 	path = Ruby
 	url = git@github.com:AgarwalConsulting/ruby_training.git
+[submodule "Google-Dataflow"]
+	path = Google-Dataflow
+	url = git@github.com:AgarwalConsulting/Beam-DataFlow-Training.git
