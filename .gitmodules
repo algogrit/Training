@@ -4,3 +4,6 @@
 [submodule "Docker"]
 	path = Docker
 	url = git@github.com:AgarwalConsulting/DockerTraining.git
+[submodule "Kubernetes"]
+	path = Kubernetes
+	url = git@github.com:AgarwalConsulting/Kubernetes-Training.git
