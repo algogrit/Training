@@ -7,3 +7,6 @@
 [submodule "Kubernetes"]
 	path = Kubernetes
 	url = git@github.com:AgarwalConsulting/Kubernetes-Training.git
+[submodule "Go"]
+	path = Go
+	url = git@github.com:AgarwalConsulting/Go-Training.git
