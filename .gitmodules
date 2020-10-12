@@ -19,3 +19,6 @@
 [submodule "Java"]
 	path = Java
 	url = git@github.com:AgarwalConsulting/java-training.git
+[submodule "Rust"]
+	path = Rust
+	url = git@github.com:AgarwalConsulting/Rust-Training.git
