@@ -22,3 +22,6 @@
 [submodule "Rust"]
 	path = Rust
 	url = git@github.com:AgarwalConsulting/Rust-Training.git
+[submodule "NWVirt"]
+	path = NWVirt
+	url = git@github.com:AgarwalConsulting/NWVirt-Training.git
