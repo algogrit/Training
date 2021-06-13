@@ -25,3 +25,6 @@
 [submodule "NWVirt"]
 	path = NWVirt
 	url = git@github.com:AgarwalConsulting/NWVirt-Training.git
+[submodule "GCP"]
+	path = GCP
+	url = git@github.com:AgarwalConsulting/gcp-training.git
