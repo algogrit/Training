@@ -28,3 +28,6 @@
 [submodule "GCP"]
 	path = GCP
 	url = git@github.com:AgarwalConsulting/gcp-training.git
+[submodule "Cilium"]
+	path = Cilium
+	url = git@github.com:AgarwalConsulting/Cilium-Training.git
