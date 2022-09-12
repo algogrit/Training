@@ -34,3 +34,6 @@
 [submodule "Elixir"]
 	path = Elixir
 	url = git@github.com:AgarwalConsulting/elixir_training.git
+[submodule "Websockets"]
+	path = Websockets
+	url = git@github.com:AgarwalConsulting/websockets-training.git
