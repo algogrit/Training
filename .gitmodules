@@ -37,3 +37,6 @@
 [submodule "Websockets"]
 	path = Websockets
 	url = git@github.com:AgarwalConsulting/websockets-training.git
+[submodule "Helm"]
+	path = Helm
+	url = git@github.com:AgarwalConsulting/Helm-Training.git
