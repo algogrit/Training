@@ -40,3 +40,6 @@
 [submodule "Helm"]
 	path = Helm
 	url = git@github.com:AgarwalConsulting/Helm-Training.git
+[submodule "K8s4Dev"]
+	path = K8s4Dev
+	url = git@github.com:AgarwalConsulting/K8s4Devs-Training.git
