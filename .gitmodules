@@ -43,3 +43,9 @@
 [submodule "K8s4Dev"]
 	path = K8s4Dev
 	url = git@github.com:AgarwalConsulting/K8s4Devs-Training.git
+[submodule "Spark"]
+	path = Spark
+	url = git@github.com:AgarwalConsulting/apache-spark-training.git
+[submodule "DataDog"]
+	path = DataDog
+	url = git@github.com:AgarwalConsulting/datadog-training.git
