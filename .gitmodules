@@ -52,3 +52,6 @@
 [submodule "Distributed-Design-Patterns"]
 	path = Distributed-Design-Patterns
 	url = git@github.com:AgarwalConsulting/distributed-design-patterns-training.git
+[submodule "SQLforPyDevs"]
+	path = SQLforPyDevs
+	url = git@github.com:AgarwalConsulting/SQLforPythonDevelopersTraining.git
