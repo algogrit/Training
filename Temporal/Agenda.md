@@ -1,7 +1,7 @@
 # Temporal Training Outline
 
 **20 hours · 5 days × 4 hours**
-Audience: Software engineers transitioning from Airflow · Python & Java · Kafka-heavy stacks
+Audience: Software engineers transitioning from Airflow · Java · Kafka-heavy stacks · Spring Boot
 
 ---
 
@@ -32,8 +32,10 @@ Audience: Software engineers transitioning from Airflow · Python & Java · Kafk
 - **Local dev setup — Temporal CLI, Docker Compose, Temporal Web UI** `[lab]`
   - Run a local cluster; inspect the Web UI; compare to Airflow's UI mental model
 
-- **First Workflow in Python (and Java stub) — "Hello Temporal"** `[lab]`
-  - SDK setup, `@workflow.defn`, `@activity.defn`, `WorkflowClient`
+- **First Workflow in Java — "Hello Temporal"** `[lab]`
+  - SDK setup: `io.temporal:temporal-sdk` Gradle/Maven dependency
+  - `@WorkflowInterface`, `@WorkflowMethod`, `@ActivityInterface`, `@ActivityMethod`
+  - `WorkflowClient`, `WorkflowOptions`, `WorkflowStubs`
   - Side-by-side with equivalent Airflow DAG
 
 - **Reading the Event History — understanding what replay actually does** `[lab]`
@@ -45,40 +47,49 @@ Audience: Software engineers transitioning from Airflow · Python & Java · Kafk
 
 ### Morning · 2 hrs
 
-- **Calling Activities asynchronously — explicit focus** `[lab]`
-  - `execute_activity` vs. `start_activity`; Activity handles; cancellation
-  - Python: `asyncio`-based execution model
-  - Java: `Promise`-based execution model
+- **Calling Activities asynchronously in Java** `[lab]`
+  - `Async.function()` and `Async.procedure()` for non-blocking activity invocation
+  - Activity stubs and typed activity handles
+  - Cancellation scopes and `CancellationScope`
 
-- **Executing parallel Activities** `[lab]`
-  - Python: `asyncio.gather` across multiple activity handles
-  - Java: `Promise.allOf` / `Promise.anyOf`
-  - Fan-out/fan-in pattern; aggregating results
+- **Executing parallel Activities in Java** `[lab]`
+  - `Promise.allOf()` and `Promise.anyOf()`
+  - Fan-out/fan-in pattern; aggregating results with `Promise.get()`
+  - Handling partial failures in parallel branches
 
 - **Activity retries, timeouts, and heartbeating**
-  - `RetryPolicy` vs. Airflow's `retry` + `retry_delay`
-  - `Schedule-to-Close` vs. `Start-to-Close`; why heartbeating is not optional for long-running work
+  - `RetryOptions` vs. Airflow's `retry` + `retry_delay`
+  - `scheduleToCloseTimeout` vs. `startToCloseTimeout`
+  - `Activity.getExecutionContext().heartbeat()` — not optional for long-running work
+  - Handling `ActivityPausedException` and `ActivityCanceledException` on heartbeat
 
 - **Determinism constraints — the rules that keep replay honest**
-  - No `random`, no `time.now()`, no external calls in Workflow code
-  - How to test for violations
+  - No `Math.random()`, no `System.currentTimeMillis()`, no direct I/O in Workflow code
+  - Using `Workflow.currentTimeMillis()` and `Workflow.newRandom()`
+  - How to detect and test for violations
 
 ### Afternoon · 2 hrs
 
 - **Signals and Queries — external interaction with running Workflows** `[lab]`
-  - Build a workflow that waits for an approval signal
+  - `@SignalMethod`, `@QueryMethod` annotations
+  - Build a workflow that waits for an approval signal using `Workflow.await()`
   - Query its state without interrupting it
 
 - **Updates (Workflow Update API) — synchronous request/response against a running Workflow** `[lab]`
+  - `@UpdateMethod` and `@UpdateValidatorMethod`
+  - `UpdateOptions.setWaitForStage(WorkflowUpdateStage)` — required; pass `COMPLETED` or `ACCEPTED` explicitly
+  - `WorkflowClient.startUpdate` for starting an update without immediately blocking on the result
+  - `WorkflowClient.startUpdateWithStart` with `WithStartWorkflowOperation` for atomic start + update
 
 - **CRON Jobs and Schedules — replacing Airflow's scheduler** `[airflow]` `[lab]`
   - Cron expressions, interval schedules, jitter, catchup policy
   - Migrating Airflow `schedule_interval` and `catchup` patterns directly
   - Overlap policies: `Skip`, `BufferOne`, `AllowAll`, `Terminate`
+  - `ScheduleClient` and `ScheduleOptions` in the Java SDK
 
 - **Workflow timeouts and Child Workflows** `[airflow]`
-  - `ExecutionTimeout` vs. `RunTimeout`; replacing `dagrun_timeout` and SLA misses
-  - Child Workflows vs. Activities; replacing `SubDagOperator` and `TaskGroup`
+  - `workflowExecutionTimeout` vs. `workflowRunTimeout`; replacing `dagrun_timeout` and SLA misses
+  - Child Workflows via `Workflow.newChildWorkflowStub()`; replacing `SubDagOperator` and `TaskGroup`
 
 ---
 
@@ -91,27 +102,31 @@ Audience: Software engineers transitioning from Airflow · Python & Java · Kafk
   - When to use Signals vs. consuming directly from a topic
 
 - **Kafka consumer as a Temporal Activity — reliable at-least-once consumption** `[kafka]`
-  - Commit offsets only after Activity succeeds
-  - Heartbeat on long polls; idempotency keys
+  - Java `KafkaConsumer` inside an Activity; commit offsets only after Activity succeeds
+  - `Activity.getExecutionContext().heartbeat()` on long polls; idempotency keys
+  - Handling `ActivityPausedException` and `ActivityCanceledException` on heartbeat
 
 - **Producing to Kafka from Activities — transactional guarantees and outbox patterns** `[kafka]`
+  - Java `KafkaProducer` with idempotent producer config
+  - Outbox pattern: write to DB + produce in the same Activity
 
 - **Replacing Kafka-triggered Airflow DAGs with Signal-driven Workflows** `[airflow]` `[kafka]`
-  - A Kafka consumer bridge that sends Signals
+  - A Kafka consumer bridge (plain Java thread) that sends Signals via `WorkflowStub`
   - Eliminating the REST API trigger layer
 
 ### Afternoon · 2 hrs
 
 - **Lab — end-to-end Kafka → Temporal → Kafka pipeline** `[lab]` `[kafka]`
   - Order processing example: consume order event → run approval workflow → produce outcome event
+  - Full Java implementation: `KafkaConsumer` bridge, Workflow, Activities, `KafkaProducer`
 
 - **Fan-out with Kafka partitions — parallelism inside a Workflow** `[lab]` `[kafka]`
-  - `execute_activity` in parallel across a partition range (capped at 4–6 partitions)
+  - `Promise.allOf()` across parallel activity invocations per partition range (capped at 4–6)
   - Aggregating results back into the parent workflow
 
 - **Dead-letter handling — Kafka DLQ vs. Temporal's built-in retry exhaustion** `[kafka]`
   - When to let Temporal own the retry vs. routing to a DLQ
-  - Compensating transactions
+  - Compensating transactions as a precursor to Day 5 Saga pattern
 
 ---
 
@@ -119,31 +134,45 @@ Audience: Software engineers transitioning from Airflow · Python & Java · Kafk
 
 ### Morning · 2 hrs
 
-- **Workflow versioning — patching and the versioning API** `[airflow]`
+- **Workflow versioning — patching, the versioning API, and safe deploy** `[airflow]`
   - The equivalent of Airflow's DAG versioning problem
-  - Using `workflow.get_version()` and `patch()` safely during rolling deploys
+  - Using `Workflow.getVersion()` safely during rolling deploys
+  - Patching strategies: additive changes vs. breaking changes
+  - `@WorkflowVersioningBehavior` — higher-level alternative to patching
+    - `Pinned` — short-lived workflows; never affected by new worker deployments
+    - `AutoUpgrade` — long-running workflows; upgrade automatically to the latest worker
+  - When to use `@WorkflowVersioningBehavior` vs. `Workflow.getVersion()` — decision guide
 
-- **Worker sizing and Task Queue design — throughput vs. isolation**
+- **Worker sizing, Task Queue design, and auto-tuning**
   - Sticky execution; separate queues for high-latency vs. fast activities
-  - Autoscaling Worker deployments
+  - Manual tuning: `WorkerOptions.maxConcurrentActivityExecutionSize`,
+    `maxConcurrentWorkflowTaskExecutionSize`
+  - `ResourceBasedTuner` — preferred for production; set memory and CPU thresholds and the
+    worker auto-adjusts slot counts based on available host resources
+  - `CompositeTuner` for mixing strategies across workflow and activity slots
+  - Virtual threads (`WorkerFactoryOptions.setUsingVirtualWorkflowThreads`,
+    `WorkerOptions.setUsingVirtualThreads`) for high-concurrency activity workers on JVM 21+
+  - Autoscaling Worker deployments in Kubernetes
 
 - **Observability — Prometheus, Grafana, and OpenTelemetry** `[lab]`
   - Docker Compose: add Prometheus + Grafana alongside Temporal
-  - Scraping the Worker metrics endpoint; key production SLO metrics
-  - OpenTelemetry span propagation into Activities
-  - Writing a custom Activity metric (counter, histogram)
+  - Micrometer + Prometheus registry wired into the Java SDK's `MicrometerClientStatsReporter`
+  - OpenTelemetry span propagation into Activities via `OpenTracingClientInterceptor`
+  - Writing a custom Activity metric (counter, histogram) with Micrometer
 
 - **Namespace strategy — multi-tenancy, isolation, and data retention**
 
 ### Afternoon · 2 hrs
 
-- **Testing Workflows — the Temporal testing framework** `[lab]`
-  - `TestWorkflowEnvironment`, mocking Activities, time-skipping for scheduled workflows
+- **Testing Workflows — the Temporal Java testing framework** `[lab]`
+  - `TestWorkflowEnvironment` with JUnit 5 and `@RegisterExtension TestWorkflowExtension`
+  - Mocking Activities with `Mockito`; time-skipping with `TestWorkflowEnvironment.sleep()`
+  - `TestWorkflowExtension` for Spring Boot integration tests
   - Runs fully in-process — no Docker required
 
 - **Workflow replay testing — catching determinism regressions** `[lab]`
   - Replaying production history against new code before deploying
-  - The `Replayer` API
+  - The `WorkflowReplayer` API in Java
 
 - **Migrating Airflow DAGs — a decision framework** `[airflow]`
   - Which DAGs to migrate first (complexity × risk matrix)
@@ -152,54 +181,98 @@ Audience: Software engineers transitioning from Airflow · Python & Java · Kafk
 
 ---
 
-## Day 5 — Advanced patterns & capstone
+## Day 5 — Saga pattern, Spring Boot & capstone
 
 ### Morning · 2 hrs
 
-- **Real-world Workflow walkthrough — a non-trivial production example**
-  - Structured code walkthrough of a multi-step, multi-activity workflow
-  - Covers: retries, signals, child workflows, error handling, versioning — all together
-  - Discussion: how would this have been built in Airflow, and what's different?
+- **Real-world Workflow walkthrough — order processing saga** `[lab]`
+  - Structured Java code walkthrough: payment → inventory → notification pipeline
+  - Covers retries, signals, child workflows, error handling, and versioning — all together
+  - Establishes the running example used throughout the Saga and Spring Boot sessions
 
-- **Advanced patterns**
-  - Saga pattern: distributed transactions without two-phase commit; compensating Activities
-  - Continue-as-New: handling very long-running or high-event-count Workflows
-  - Infinite loop workflows; history size limits in practice
+- **Saga pattern in Spring Boot — distributed transaction consistency with Temporal** `[lab]`
+  - Saga orchestration vs. choreography — why orchestration fits Temporal naturally
+  - Defining compensating Activities: `cancelPayment()`, `restoreInventory()`, `sendFailureNotification()`
+  - Implementing rollback sequencing in the Workflow: try/catch with explicit compensation calls
+  - Sync sagas: `UpdateOptions.setWaitForStage(WorkflowUpdateStage.COMPLETED)` blocks the
+    caller until the saga completes
+  - Async sagas: fire-and-forget with Signal-based callbacks; polling with Query
+  - `@WorkflowInterface` and `@ActivityInterface` as Spring `@Component` beans
+  - Wiring `WorkflowClient` as a Spring `@Bean`; `Worker` registration on `ApplicationContext` start
+  - Spring Kafka `@KafkaListener` as the event-driven saga trigger
+  - Graceful shutdown: `Worker.shutdown()` on `ApplicationContext` close
+  - Lab: inject a failure at each saga step; verify compensation executes correctly
 
-- **Spring Boot integration** `[lab]`
-  - `temporalio/sdk-java` with Spring Boot autoconfiguration
-  - Registering Workers and Activities as Spring beans
-  - Wiring Temporal with Spring Kafka listeners for event-driven triggers
-  - Configuration, health checks, graceful shutdown
+- **Continue-as-New — long-running sagas and history size limits**
+  - When a saga runs indefinitely (e.g. subscription lifecycle); using `Workflow.continueAsNew()`
 
 ### Afternoon · 2 hrs
 
-- **Capstone — migrate a real Airflow DAG** `[lab]` `[airflow]` `[kafka]`
-  - Teams receive a multi-step Airflow DAG with Kafka triggers
-  - Redesign and implement it in Temporal end-to-end
-  - Must include: schedules or signals, parallel activities, at least one retry policy
+- **Capstone — design and implement a transactional saga** `[lab]` `[airflow]` `[kafka]`
+  - Teams receive a multi-step Airflow DAG with Kafka triggers representing a business transaction
+  - Redesign as a Temporal Saga in Spring Boot end-to-end
+  - Requirements: compensation logic for every step, Kafka trigger via Spring Kafka listener,
+    at least one sync and one async interaction pattern
 
 - **Capstone review — diff the two implementations, identify trade-offs**
   - What got simpler? What required more thought?
-  - Code volume, error handling surface, observability
+  - Consistency guarantees: what Temporal gives you vs. what you still own
+  - Observability and auditability of compensation steps
 
-- **Q&A and open migration planning — bring your own DAG**
+- **Q&A and open migration planning — bring your own workflow**
   - Teams present their real migration candidates
-  - Group discussion on approach, phasing, and timeline
+  - Group discussion on saga boundaries, compensation design, and phasing
 
 ---
 
 ## Docker Compose stack reference
 
-All labs can run on a laptop with Docker or pre-configured on VMs. Minimum recommended RAM: 8 GB.
+All labs run on a laptop with Docker. Minimum recommended RAM: 8 GB.
 
 | Service | Used from | Notes |
 |---|---|---|
 | `temporalio/auto-setup` | Day 1 | Temporal server + Web UI bundled |
 | PostgreSQL | Day 1 | Temporal persistence backend |
 | Kafka (KRaft, single broker) | Day 3 | Bitnami or Confluent image; no Zookeeper needed |
-| Prometheus | Day 4 | Scrapes Worker metrics endpoint |
+| Prometheus | Day 4 | Scrapes Worker metrics endpoint via Micrometer |
 | Grafana | Day 4 | Pre-loaded Temporal dashboard |
 
 > Day 4 testing labs use `TestWorkflowEnvironment` (in-process) — no server or Docker required.
 > Cap Kafka partition count at **4–6** in the Day 3 fan-out lab to avoid CPU spikes on lower-spec machines.
+
+---
+
+## Java SDK dependency reference
+
+> **Note:** `temporal-spring-boot-starter-alpha` is end-of-life as of SDK 1.24.0. Use
+> `temporal-spring-boot-starter` (no suffix). Supports Spring Boot 2.x, 3.x, and 4.x.
+> Pin the version explicitly in the training repo.
+
+```xml
+<!-- Maven -->
+<dependency>
+  <groupId>io.temporal</groupId>
+  <artifactId>temporal-sdk</artifactId>
+  <version>1.32.1</version>
+</dependency>
+
+<dependency>
+  <groupId>io.temporal</groupId>
+  <artifactId>temporal-spring-boot-starter</artifactId>
+  <version>1.32.1</version>
+</dependency>
+
+<dependency>
+  <groupId>io.temporal</groupId>
+  <artifactId>temporal-testing</artifactId>
+  <version>1.32.1</version>
+  <scope>test</scope>
+</dependency>
+```
+
+```groovy
+// Gradle
+implementation 'io.temporal:temporal-sdk:1.32.1'
+implementation 'io.temporal:temporal-spring-boot-starter:1.32.1'
+testImplementation 'io.temporal:temporal-testing:1.32.1'
+```
