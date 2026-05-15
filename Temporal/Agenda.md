@@ -1,12 +1,12 @@
 # Temporal Training Outline
 
-**20 hours · 5 days × 4 hours**
+**24 hours · 6 days × 4 hours**
 Audience: Software engineers transitioning from Airflow · Java · Kafka-heavy stacks · Spring Boot
 
 ---
 
 > **Tags used below**
-> `[airflow]` Migration/comparison note · `[kafka]` Kafka integration · `[lab]` Hands-on exercise
+> `[airflow]` Migration/comparison note · `[kafka]` Kafka integration · `[lab]` Hands-on exercise · `[aws]` AWS migration note · `[containers]` Container/Kubernetes pattern
 
 ---
 
@@ -225,6 +225,103 @@ Audience: Software engineers transitioning from Airflow · Java · Kafka-heavy s
 
 ---
 
+## Day 6 — AWS migration & container workloads *(new)*
+
+### Morning · 2 hrs — Replacing AWS Glue + Lambda + S3 with Temporal
+
+- **The AWS orchestration problem — why glue code becomes glue workflows** `[aws]`
+  - How Lambda + Glue + Step Functions accumulates hidden orchestration complexity
+  - Where state lives in the AWS model: S3 checkpoints, DynamoDB locks, SSM params
+  - The cost of distributed state: debugging a failed pipeline across CloudWatch, S3, and Glue history
+  - Temporal's value proposition: durable execution replaces the S3-checkpoint pattern entirely
+
+- **Mapping AWS primitives to Temporal** `[aws]`
+
+  | AWS Primitive | Temporal Equivalent | Notes |
+  |---|---|---|
+  | Glue Job (ETL logic) | Activity (Java) | Your code; no proprietary DSL |
+  | Lambda (trigger / orchestrator) | Workflow starter or Signal handler | Code, not YAML |
+  | S3 (checkpoint between steps) | Temporal durable state | Eliminated entirely |
+  | Step Functions state machine | Temporal Workflow | Branching, loops, waits in code |
+  | Glue Workflow / trigger | Temporal Schedule or parent Workflow | First-class, not bolted on |
+  | CloudWatch retry + DLQ | Temporal RetryOptions + compensation | Per-activity granularity |
+  | EventBridge rule → Lambda | Kafka/SQS consumer bridge → Signal | Or direct SDK trigger |
+
+- **When to keep AWS compute vs. replace it** `[aws]`
+  - Keep Glue Spark for terabyte-scale distributed joins — Temporal orchestrates *around* it, not instead of it
+  - Replace Lambda orchestration glue: event routing, step chaining, state passing via S3
+  - Replace Glue Python Shell jobs with Temporal Activities in Java; same business logic, better retry semantics
+  - Decision matrix: job duration × statefulness × branching complexity
+
+- **Wrapping a Glue Spark job as a Temporal Activity** `[aws]` `[lab]`
+  - Submitting a Glue job run via `GlueClient` (AWS SDK v2) inside an Activity
+  - Polling job status with `Activity.getExecutionContext().heartbeat(jobRunId)`
+  - Handling `FAILED`, `TIMEOUT`, and `STOPPED` states cleanly
+  - Surfacing Glue error details in `ApplicationFailure` for Temporal UI visibility
+  - Timeout alignment: `startToCloseTimeout` must exceed worst-case Glue job duration
+
+- **Replacing S3-based checkpointing** `[aws]` `[lab]`
+  - Why pipelines write intermediate results to S3: crash survival, hand-off between Lambdas
+  - Temporal's durable state means workflow-local data survives worker restarts automatically
+  - Pattern: pass S3 URIs as Activity outputs (for large payloads) but let Temporal own *whether* each step ran
+  - Payload size limits: keep Workflow history lean; use S3 references for blobs > ~2 MB
+  - Codec server pattern for encrypting S3 URI payloads at rest in Temporal history
+
+- **Migrating a Lambda + Step Functions pipeline end-to-end** `[aws]` `[lab]`
+  - Take a real Step Functions state machine (JSON): validate → transform → load → notify
+  - Rewrite as a Temporal Workflow + four Activities in Java
+  - Compare: lines of code, error surfaces, retry configuration, debuggability
+  - Strangler fig approach: run Step Functions and Temporal in parallel; route by feature flag
+
+### Afternoon · 2 hrs — Running Temporal Workers as container workloads
+
+- **Temporal Worker as a containerised service — the mental model** `[containers]`
+  - Workers are stateless long-running processes: they poll Task Queues, execute, repeat
+  - No listener ports required; Workers initiate all connections outbound to the Temporal Frontend
+  - Implication: Workers fit naturally into Kubernetes Deployments without Ingress or Service objects
+  - Container image strategy: one image per Worker pool, or a shared image with Task Queue env var
+
+- **Dockerfile for a Java Temporal Worker** `[containers]` `[lab]`
+  - Multi-stage build: Maven/Gradle compile stage + minimal JRE runtime stage
+  - JVM flags for containers: `-XX:+UseContainerSupport`, `-XX:MaxRAMPercentage`
+  - Graceful shutdown: `SIGTERM` → `Worker.shutdown()` → drain in-flight Activity executions
+  - Health check: expose a simple HTTP `/health` endpoint (Spring Actuator or a plain HttpServer)
+    that returns `200` only after `WorkerFactory.start()` succeeds
+
+- **Kubernetes Deployment for Temporal Workers** `[containers]` `[lab]`
+  - `Deployment` with `replicas`, `resources.requests/limits`, and `terminationGracePeriodSeconds`
+  - Aligning `terminationGracePeriodSeconds` with `startToCloseTimeout` to avoid mid-activity kills
+  - ConfigMap + Secrets for `TEMPORAL_ADDRESS`, `TEMPORAL_NAMESPACE`, and AWS credentials
+  - Liveness vs. readiness probes: readiness gates on Task Queue poll success; liveness on JVM health
+  - Rolling update strategy: `maxUnavailable: 0` to preserve sticky execution during deploys
+
+- **Autoscaling Workers with KEDA** `[containers]` `[lab]`
+  - Why HPA on CPU/memory lags for Temporal Workers (queue depth is the right signal, not CPU)
+  - KEDA `ScaledObject` targeting Temporal Task Queue backlog via the Temporal metrics endpoint
+  - `minReplicaCount: 1` to keep at least one poll active; `maxReplicaCount` tuned per workload
+  - Scaling Activity workers independently from Workflow workers using separate Deployments
+  - Cost optimisation: scale-to-zero for batch/overnight workloads; keep workflow workers at min 1
+
+- **Running Glue-replacement Activities in containers — the Temporal Worker as compute** `[aws]` `[containers]`
+  - Replacing Glue jobs with a containerised Java Temporal Worker: same business logic, better retry model
+  - Resource isolation: separate Deployments for CPU-heavy transform activities vs. lightweight I/O activities
+  - Sidecars and init containers: AWS credential injection via IRSA (IAM Roles for Service Accounts)
+
+- **Temporal Cloud vs. self-hosted on EKS — operational trade-offs** `[aws]` `[containers]`
+  - Self-hosted: Temporal server on EKS (Helm chart), RDS PostgreSQL, ElasticSearch for visibility
+  - Temporal Cloud: managed Frontend + History + Matching; you only run Workers
+  - Cost model comparison: EC2/RDS for self-hosted vs. Temporal Cloud action-based pricing
+  - Migration path: start with Temporal Cloud to de-risk the platform; move self-hosted if cost justifies
+  - Network topology: Workers on EKS calling Temporal Cloud over mTLS; AWS PrivateLink for self-hosted
+
+- **Lab — containerised end-to-end: S3 trigger → Temporal Worker → S3 output** `[aws]` `[containers]` `[lab]`
+  - Build and push a Worker Docker image to ECR
+  - Deploy to local `kind` cluster (simulating EKS); configure KEDA ScaledObject
+  - Trigger a workflow via an S3 event bridge → SQS → Signal bridge pattern
+  - Observe autoscaling as workflow backlog grows; verify graceful drain on pod termination
+
+---
+
 ## Docker Compose stack reference
 
 All labs run on a laptop with Docker. Minimum recommended RAM: 8 GB.
@@ -236,17 +333,21 @@ All labs run on a laptop with Docker. Minimum recommended RAM: 8 GB.
 | Kafka (KRaft, single broker) | Day 3 | Bitnami or Confluent image; no Zookeeper needed |
 | Prometheus | Day 4 | Scrapes Worker metrics endpoint via Micrometer |
 | Grafana | Day 4 | Pre-loaded Temporal dashboard |
+| LocalStack | Day 6 | Mocks Glue, S3, SQS, and EventBridge for AWS labs |
+| `kind` (Kubernetes in Docker) | Day 6 | Local EKS-equivalent for container labs |
+| KEDA | Day 6 | Installed into `kind` cluster via Helm |
 
 > Day 4 testing labs use `TestWorkflowEnvironment` (in-process) — no server or Docker required.
 > Cap Kafka partition count at **4–6** in the Day 3 fan-out lab to avoid CPU spikes on lower-spec machines.
+> Day 6 AWS labs use LocalStack to avoid requiring real AWS credentials on training machines.
 
 ---
 
 ## Java SDK dependency reference
 
-> **Note:** `temporal-spring-boot-starter-alpha` is end-of-life as of SDK 1.24.0. Use
+<!-- > **Note:** `temporal-spring-boot-starter-alpha` is end-of-life as of SDK 1.24.0. Use
 > `temporal-spring-boot-starter` (no suffix). Supports Spring Boot 2.x, 3.x, and 4.x.
-> Pin the version explicitly in the training repo.
+> Pin the version explicitly in the training repo. -->
 
 ```xml
 <!-- Maven -->
@@ -268,6 +369,23 @@ All labs run on a laptop with Docker. Minimum recommended RAM: 8 GB.
   <version>1.32.1</version>
   <scope>test</scope>
 </dependency>
+
+<!-- Day 6: AWS SDK v2 for Glue/S3/SQS Activities -->
+<dependency>
+  <groupId>software.amazon.awssdk</groupId>
+  <artifactId>glue</artifactId>
+  <version>2.25.0</version>
+</dependency>
+<dependency>
+  <groupId>software.amazon.awssdk</groupId>
+  <artifactId>s3</artifactId>
+  <version>2.25.0</version>
+</dependency>
+<dependency>
+  <groupId>software.amazon.awssdk</groupId>
+  <artifactId>sqs</artifactId>
+  <version>2.25.0</version>
+</dependency>
 ```
 
 ```groovy
@@ -275,4 +393,9 @@ All labs run on a laptop with Docker. Minimum recommended RAM: 8 GB.
 implementation 'io.temporal:temporal-sdk:1.32.1'
 implementation 'io.temporal:temporal-spring-boot-starter:1.32.1'
 testImplementation 'io.temporal:temporal-testing:1.32.1'
+
+// Day 6: AWS SDK v2
+implementation 'software.amazon.awssdk:glue:2.25.0'
+implementation 'software.amazon.awssdk:s3:2.25.0'
+implementation 'software.amazon.awssdk:sqs:2.25.0'
 ```
