@@ -20,7 +20,18 @@ function Test-Command {
 
 Test-Command "java" "Install JDK 17 or newer."
 Test-Command "mvn" "Install Maven 3.9 or newer."
-Test-Command "temporal" "Install Temporal CLI from https://temporal.io/setup/install-temporal-cli"
+if ($null -ne (Get-Command temporal -ErrorAction SilentlyContinue)) {
+  $command = Get-Command temporal
+  Write-Host "ok: temporal -> $($command.Source)"
+} elseif ($null -ne (Get-Command docker -ErrorAction SilentlyContinue)) {
+  $command = Get-Command docker
+  Write-Host "ok: docker -> $($command.Source)"
+  Write-Host "  Temporal CLI is not installed; scripts/start-temporal.ps1 will use Docker."
+} else {
+  Write-Host "missing: temporal or docker"
+  Write-Host "  Install Temporal CLI or Docker. See Setup.md."
+  $missing = $true
+}
 
 if ($missing) {
   exit 1
@@ -28,4 +39,3 @@ if ($missing) {
 
 Write-Host ""
 Write-Host "All required local commands are available."
-

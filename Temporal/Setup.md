@@ -9,13 +9,13 @@ This repository contains two kinds of examples:
 
 - JDK 17 or newer
 - Maven 3.9 or newer
-- Temporal CLI for examples that start real Workflows
+- Temporal CLI or Docker for examples that start real Workflows
 
 ## Install Prerequisites
 
 ### macOS
 
-With Homebrew:
+With Homebrew and Temporal CLI:
 
 ```bash
 brew install openjdk maven temporal
@@ -26,8 +26,8 @@ post-install instructions for adding the JDK to your `PATH`.
 
 ### Linux
 
-Install a JDK and Maven with your distribution package manager, then install the
-Temporal CLI from the official Temporal setup page.
+Install a JDK and Maven with your distribution package manager, then install
+either Temporal CLI or Docker.
 
 Ubuntu/Debian example:
 
@@ -48,16 +48,19 @@ Temporal CLI:
 https://temporal.io/setup/install-temporal-cli
 ```
 
+If you prefer Docker, install Docker Engine or Docker Desktop for Linux and use
+`scripts/start-temporal.sh`.
+
 ### Windows
 
 Use PowerShell or Windows Terminal.
 
-With winget:
+With winget and Temporal CLI:
 
 ```powershell
 winget install EclipseAdoptium.Temurin.17.JDK
 winget install Apache.Maven
-winget install Temporal.TemporalCLI
+winget install --id Temporal.TemporalCLI --exact
 ```
 
 If `Temporal.TemporalCLI` is not available through winget on your machine, use
@@ -67,8 +70,10 @@ the official Temporal setup page:
 https://temporal.io/setup/install-temporal-cli
 ```
 
-Windows users can run either the PowerShell scripts in `scripts/*.ps1`, or the
-Bash scripts from WSL/Git Bash.
+Windows users can also install Docker Desktop instead of Temporal CLI; the
+`scripts/start-temporal.ps1` script will use Docker when `temporal.exe` is not
+available. Run either the PowerShell scripts in `scripts/*.ps1`, or the Bash
+scripts from WSL/Git Bash.
 
 ## Check Setup
 
@@ -86,7 +91,8 @@ scripts/check-local.ps1
 
 ## Start Temporal Locally
 
-Run this in a dedicated terminal:
+Run this in a dedicated terminal. The script uses Temporal CLI when available
+and falls back to Docker when available.
 
 ```bash
 scripts/start-temporal.sh

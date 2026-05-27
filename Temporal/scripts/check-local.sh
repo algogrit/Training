@@ -19,7 +19,16 @@ require() {
 
 require java "Install JDK 17 or newer."
 require mvn "Install Maven 3.9 or newer."
-require temporal "Install with: brew install temporal"
+if command -v temporal >/dev/null 2>&1; then
+  echo "ok: temporal -> $(command -v temporal)"
+elif command -v docker >/dev/null 2>&1; then
+  echo "ok: docker -> $(command -v docker)"
+  echo "  Temporal CLI is not installed; scripts/start-temporal.sh will use Docker."
+else
+  echo "missing: temporal or docker"
+  echo "  Install Temporal CLI or Docker. See Setup.md."
+  missing=1
+fi
 
 echo
 echo "Repository: $ROOT_DIR"
@@ -30,4 +39,3 @@ fi
 
 echo
 echo "All required local commands are available."
-
