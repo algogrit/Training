@@ -1,0 +1,26 @@
+{
+  "StartAt": "Validate",
+  "States": {
+    "Validate": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:region:acct:function:validate",
+      "Next": "Transform"
+    },
+    "Transform": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::glue:startJobRun.sync",
+      "Next": "Load"
+    },
+    "Load": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:region:acct:function:load",
+      "Next": "Notify"
+    },
+    "Notify": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:region:acct:function:notify",
+      "End": true
+    }
+  }
+}
+

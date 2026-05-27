@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: temporal-transform-worker
+spec:
+  replicas: 2
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app: temporal-transform-worker
+  template:
+    metadata:
+      labels:
+        app: temporal-transform-worker
+    spec:
+      terminationGracePeriodSeconds: 120
+      containers:
+        - name: worker
+          image: example.com/temporal-transform-worker:latest
+          env:
+            - name: TEMPORAL_ADDRESS
+              valueFrom:
+                configMapKeyRef:
+                  name: temporal-worker-config
+                  key: temporal-address
+            - name: TEMPORAL_NAMESPACE
+              valueFrom:
+                configMapKeyRef:
+                  name: temporal-worker-config
+                  key: temporal-namespace
+            - name: TASK_QUEUE
+              value: transform
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "512Mi"
+            limits:
+              cpu: "2"
+              memory: "2Gi"
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+

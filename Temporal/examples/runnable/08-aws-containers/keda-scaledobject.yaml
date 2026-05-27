@@ -1,0 +1,17 @@
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: temporal-transform-worker
+spec:
+  scaleTargetRef:
+    name: temporal-transform-worker
+  minReplicaCount: 1
+  maxReplicaCount: 10
+  triggers:
+    - type: prometheus
+      metadata:
+        serverAddress: http://prometheus.monitoring.svc.cluster.local:9090
+        metricName: temporal_task_queue_backlog
+        threshold: "20"
+        query: sum(temporal_task_queue_backlog{task_queue="transform"})
+
