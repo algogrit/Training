@@ -23,7 +23,15 @@ class GlueJobActivitiesImpl implements GlueJobActivities {
           .contains(jobRun.jobRunState())) {
         throw ApplicationFailure.newFailure(jobRun.errorMessage(), "GlueJobFailed");
       }
+
+      // Back off between polls. Without this the loop hammers the Glue API
+      // and burns through the AWS throttle limit before the job finishes.
+      try {
+        Thread.sleep(Duration.ofSeconds(15).toMillis());
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+        throw ApplicationFailure.newFailure("Interrupted while polling Glue", "GluePollingInterrupted");
+      }
     }
   }
 }
-

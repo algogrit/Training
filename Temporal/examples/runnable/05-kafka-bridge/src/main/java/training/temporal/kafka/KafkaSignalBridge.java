@@ -1,5 +1,6 @@
 package training.temporal.kafka;
 
+import io.temporal.client.BatchRequest;
 import io.temporal.client.WorkflowClient;
 import io.temporal.client.WorkflowOptions;
 import java.time.Duration;
@@ -44,8 +45,10 @@ public class KafkaSignalBridge implements Runnable {
                       .setWorkflowId("order-" + orderId)
                       .setTaskQueue(taskQueue)
                       .build());
-          WorkflowClient.start(workflow::run, orderId);
-          workflow.orderEvent(record.value());
+          BatchRequest batch = client.newSignalWithStartRequest();
+          batch.add(workflow::run, orderId);
+          batch.add(workflow::orderEvent, record.value());
+          client.signalWithStart(batch);
           consumer.commitSync();
         }
       }

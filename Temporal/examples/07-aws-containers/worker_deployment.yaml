@@ -17,6 +17,8 @@ spec:
         app: temporal-transform-worker
     spec:
       serviceAccountName: temporal-worker
+      # Long enough to let in-flight Activities finish or heartbeat-cancel.
+      # Align with the longest Activity StartToCloseTimeout in this Worker.
       terminationGracePeriodSeconds: 120
       containers:
         - name: worker
@@ -31,14 +33,20 @@ spec:
               value: production
             - name: TASK_QUEUE
               value: transform
+          # The Worker is not an HTTP server, so use a process-level exec probe
+          # instead of httpGet. "Process is alive and polling" is the real
+          # health signal; for richer readiness, expose an Actuator endpoint
+          # and switch this to httpGet on /actuator/health.
           readinessProbe:
-            httpGet:
-              path: /health
-              port: 8080
+            exec:
+              command: ["sh", "-c", "pgrep -f worker.jar > /dev/null"]
+            initialDelaySeconds: 10
+            periodSeconds: 10
           livenessProbe:
-            httpGet:
-              path: /health
-              port: 8080
+            exec:
+              command: ["sh", "-c", "pgrep -f worker.jar > /dev/null"]
+            initialDelaySeconds: 30
+            periodSeconds: 20
           resources:
             requests:
               cpu: "500m"
@@ -46,4 +54,3 @@ spec:
             limits:
               cpu: "2"
               memory: "2Gi"
-

@@ -27,4 +27,7 @@
 hs_err_pid*
 replay_pid*
 
+# Maven build output
+target/
+
 # End of https://www.toptal.com/developers/gitignore/api/java

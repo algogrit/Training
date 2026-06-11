@@ -8,10 +8,13 @@ spec:
   minReplicaCount: 1
   maxReplicaCount: 10
   triggers:
-    - type: prometheus
+    # KEDA's native Temporal scaler polls DescribeTaskQueue — no Prometheus
+    # exporter required.
+    - type: temporal
       metadata:
-        serverAddress: http://prometheus.monitoring.svc.cluster.local:9090
-        metricName: temporal_task_queue_backlog
-        threshold: "20"
-        query: sum(temporal_task_queue_backlog{task_queue="transform"})
-
+        endpoint: temporal-frontend.temporal.svc.cluster.local:7233
+        namespace: production
+        taskQueue: transform
+        queueType: ActivityTaskQueue
+        targetQueueSize: "20"
+        activationTargetQueueSize: "5"

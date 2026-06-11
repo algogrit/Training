@@ -60,10 +60,10 @@ case "$EXAMPLE" in
     MODE="compile"
     NEEDS_TEMPORAL="no"
     ;;
-  aws|containers|08|08-aws-containers)
+  aws|containers|transform|08|08-aws-containers)
     DIR="examples/runnable/08-aws-containers"
-    MODE="compile"
-    NEEDS_TEMPORAL="no"
+    MODE="exec"
+    MAIN_CLASS="training.temporal.aws.WorkerMain"
     ;;
   *)
     echo "Unknown runnable example: $EXAMPLE" >&2
@@ -89,7 +89,11 @@ cd "$ROOT_DIR/$DIR"
 
 case "$MODE" in
   exec)
-    mvn -q compile exec:java
+    if [[ -n "$MAIN_CLASS" ]]; then
+      mvn -q compile exec:java -Dexec.mainClass="$MAIN_CLASS"
+    else
+      mvn -q compile exec:java
+    fi
     ;;
   test)
     mvn -q test

@@ -1,0 +1,77 @@
+{
+  "uid": "temporal-training-overview",
+  "title": "Temporal Training - Overview",
+  "tags": ["temporal", "training"],
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "10s",
+  "time": { "from": "now-30m", "to": "now" },
+  "timezone": "browser",
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Workflow tasks scheduled (rate, 5m)",
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 0 },
+      "targets": [
+        {
+          "expr": "sum(rate(temporal_workflow_task_schedule_to_start_latency_count[5m]))",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "Workflow task schedule-to-start latency (p95)",
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "gridPos": { "h": 8, "w": 16, "x": 8, "y": 0 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(temporal_workflow_task_schedule_to_start_latency_bucket[5m])))",
+          "refId": "A",
+          "legendFormat": "p95"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "Workflow completed / failed (rate, 5m)",
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "targets": [
+        {
+          "expr": "sum(rate(temporal_workflow_completed_total[5m]))",
+          "refId": "A",
+          "legendFormat": "completed"
+        },
+        {
+          "expr": "sum(rate(temporal_workflow_failed_total[5m]))",
+          "refId": "B",
+          "legendFormat": "failed"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "timeseries",
+      "title": "Activity attempts / failures (rate, 5m)",
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "targets": [
+        {
+          "expr": "sum(rate(temporal_activity_execution_latency_count[5m]))",
+          "refId": "A",
+          "legendFormat": "attempts"
+        },
+        {
+          "expr": "sum(rate(temporal_activity_execution_failed_total[5m]))",
+          "refId": "B",
+          "legendFormat": "failures"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+name: temporal-training-localstack
+
+services:
+  localstack:
+    image: localstack/localstack:3.5
+    container_name: temporal-training-localstack
+    ports:
+      - "4566:4566"
+    environment:
+      SERVICES: "s3,sqs,glue,iam,sts,logs"
+      DEFAULT_REGION: "us-east-1"
+      AWS_DEFAULT_REGION: "us-east-1"
+      LS_LOG: "warn"
+      DISABLE_EVENTS: "1"
+      PERSISTENCE: "1"
+    volumes:
+      - localstack-data:/var/lib/localstack
+      - /var/run/docker.sock:/var/run/docker.sock
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:4566/_localstack/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  localstack-data:

@@ -6,7 +6,8 @@ class ImportWorkflowImpl implements ImportWorkflow {
     ValidatedFile file = activities.validate(inputS3Uri);
     String transformedUri = activities.transform(file.cleanInputUri());
     LoadResult loadResult = activities.load(transformedUri);
-    activities.notify(loadResult);
+    // Activity method intentionally not named "notify" — that would shadow
+    // Object.notify() and confuse callers and reflection-based tooling.
+    activities.publishNotification(loadResult);
   }
 }
-

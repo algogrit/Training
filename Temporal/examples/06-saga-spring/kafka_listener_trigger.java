@@ -6,6 +6,9 @@ class OrderKafkaListener {
     this.client = client;
   }
 
+  // signalWithStart keeps Kafka redeliveries idempotent: the workflow is
+  // started once per orderId, and later events for the same key signal the
+  // already-running execution instead of crashing.
   @KafkaListener(topics = "orders")
   void onOrder(OrderRequest request) {
     OrderSagaWorkflow workflow =
@@ -16,7 +19,9 @@ class OrderKafkaListener {
                 .setTaskQueue("orders")
                 .build());
 
-    WorkflowClient.start(workflow::process, request.orderId());
+    BatchRequest batch = client.newSignalWithStartRequest();
+    batch.add(workflow::process, request.orderId());
+    batch.add(workflow::onUpdate, request);
+    client.signalWithStart(batch);
   }
 }
-
