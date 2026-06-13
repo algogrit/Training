@@ -55,3 +55,6 @@
 [submodule "SQLforPyDevs"]
 	path = SQLforPyDevs
 	url = git@github.com:AgarwalConsulting/SQLforPythonDevelopersTraining.git
+[submodule "Temporal"]
+	path = Temporal
+	url = git@github.com:codermana/Temporal-Training.git
