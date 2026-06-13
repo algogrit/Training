@@ -30,4 +30,12 @@ replay_pid*
 # Maven build output
 target/
 
+# Slides (Marp / npm)
+slides/**/node_modules/
+slides/**/dist/
+.DS_Store
+
+# Standalone Marp template repo (kept for reference; lives in its own .git)
+slides-template/
+
 # End of https://www.toptal.com/developers/gitignore/api/java

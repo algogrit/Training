@@ -272,6 +272,46 @@ aws-buckets: ## List LocalStack S3 buckets
 	awslocal s3 ls
 
 # ---------------------------------------------------------------------------
+# Slides (Marp)
+# ---------------------------------------------------------------------------
+
+.PHONY: slides slides-deps slides-why slides-fundamentals slides-html slides-pdf slides-pptx
+
+slides-deps: ## Install Marp CLI for a deck (DECK=why-temporal|temporal-fundamentals)
+	@DECK=$${DECK:-why-temporal}
+	@if [ ! -d "slides/$$DECK" ]; then echo "Unknown deck: $$DECK"; exit 2; fi
+	cd "slides/$$DECK" && npm install
+
+slides: ## Preview a Marp deck (DECK=why-temporal|temporal-fundamentals [PORT=8080])
+	@DECK=$${DECK:-why-temporal}
+	@PORT=$${PORT:-8080}
+	@if [ ! -d "slides/$$DECK" ]; then echo "Unknown deck: $$DECK"; exit 2; fi
+	@if [ ! -d "slides/$$DECK/node_modules" ]; then \
+		echo ">> Installing Marp CLI for $$DECK"; \
+		cd "slides/$$DECK" && npm install; \
+	fi
+	@echo ">> Previewing $$DECK at http://localhost:$$PORT"
+	cd "slides/$$DECK" && PORT=$$PORT npm run preview
+
+slides-why: ## Preview Why Temporal at :8080
+	$(MAKE) slides DECK=why-temporal PORT=8080
+
+slides-fundamentals: ## Preview Temporal Fundamentals at :8081
+	$(MAKE) slides DECK=temporal-fundamentals PORT=8081
+
+slides-html: ## Export a deck to HTML (DECK=<name>) -> slides/<deck>/dist/index.html
+	@DECK=$${DECK:-why-temporal}
+	cd "slides/$$DECK" && npm run html
+
+slides-pdf: ## Export a deck to PDF (DECK=<name>) -> slides/<deck>/dist/slides.pdf
+	@DECK=$${DECK:-why-temporal}
+	cd "slides/$$DECK" && npm run pdf
+
+slides-pptx: ## Export a deck to PPTX (DECK=<name>) -> slides/<deck>/dist/slides.pptx
+	@DECK=$${DECK:-why-temporal}
+	cd "slides/$$DECK" && npm run pptx
+
+# ---------------------------------------------------------------------------
 # Build / test
 # ---------------------------------------------------------------------------
 

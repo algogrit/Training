@@ -18,6 +18,8 @@ to run every lab on a laptop.
 | `scripts/`          | Bash + PowerShell entry points (the recommended way to drive labs). |
 | `Setup.md`          | Detailed install + per-platform setup.                              |
 | `Makefile`          | `make help` for shortcut targets over the scripts.                  |
+| `slides/why-temporal/` | Persuasive intro deck (Marp, ~30 slides).                        |
+| `slides/temporal-fundamentals/` | Technical companion deck (Marp, ~60 slides).            |
 
 ## Quick Start
 
@@ -138,10 +140,47 @@ make list          # list every example
 make show FILE=... # print an example file
 make run-<name>    # run a lab (hello/async/approval/schedules/kafka/testing/saga/aws)
 make load-transform N=200  # start N Workflows on `transform` (KEDA demo)
+make slides-why          # preview Why Temporal (Marp)
+make slides-fundamentals # preview Temporal Fundamentals (Marp)
+make slides-html DECK=why-temporal   # export to dist/index.html
+make slides-pdf  DECK=why-temporal   # export to dist/slides.pdf
 make test          # compile every runnable project
 make build         # package every runnable project
 make clean         # mvn clean every runnable project
 ```
+
+## Slides
+
+Two Marp decks deployed to GitHub Pages as a single site under sub-paths:
+
+- Landing: <https://temporal-training.slides.codermana.com>
+- Why Temporal: <https://temporal-training.slides.codermana.com/why-temporal/>
+- Temporal Fundamentals: <https://temporal-training.slides.codermana.com/temporal-fundamentals/>
+
+Theme tokens (orange/yellow accents, JetBrains Mono code, Inter text) live in
+`slides/<deck>/themes/base.css`. The Pages workflow at
+`.github/workflows/pages.yml` builds every `slides/*/` directory with both
+`slides.md` and `package.json` on push to `master`.
+
+Local preview / export:
+
+```bash
+make slides-why            # preview Why Temporal
+make slides-fundamentals   # preview Temporal Fundamentals
+make slides-pdf DECK=why-temporal             # → slides/why-temporal/dist/slides.pdf
+make slides-html DECK=temporal-fundamentals   # → slides/temporal-fundamentals/dist/index.html
+```
+
+Or directly:
+
+```bash
+cd slides/why-temporal
+npm install
+npm run preview        # open the local URL printed by Marp
+```
+
+See `slides/README.md` for the layout-class catalog, deploy mechanic, and
+one-time GitHub setup.
 
 ## Going Further
 

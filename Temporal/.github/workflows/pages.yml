@@ -1,0 +1,76 @@
+name: Deploy slides
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - "slides/**"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Build each deck
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          for deck in slides/*/; do
+            deck_name=$(basename "$deck")
+            # Skip non-deck siblings (e.g. README.md, CNAME, index.html at slides root)
+            if [ ! -f "$deck/slides.md" ] || [ ! -f "$deck/package.json" ]; then
+              continue
+            fi
+            echo "==> Building $deck_name"
+            ( cd "$deck" && npm ci && npm run html )
+            mkdir -p "dist/$deck_name"
+            cp -R "$deck/dist/." "dist/$deck_name/"
+            if [ -d "$deck/assets" ]; then
+              cp -R "$deck/assets" "dist/$deck_name/"
+            fi
+          done
+
+      - name: Assemble landing page
+        run: |
+          set -euo pipefail
+          cp slides/index.html dist/index.html
+          if [ -f slides/CNAME ]; then cp slides/CNAME dist/CNAME; fi
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

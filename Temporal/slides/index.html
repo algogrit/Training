@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Temporal Training - Slides</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #101318;
+      --surface: #171c23;
+      --surface-strong: #202733;
+      --text: #f4f7fb;
+      --muted: #aab5c5;
+      --subtle: #748196;
+      --line: rgba(255, 255, 255, 0.14);
+      --accent: #eab308;
+      --accent-2: #f97316;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      background:
+        linear-gradient(135deg, rgba(234, 179, 8, 0.10), transparent 36%),
+        linear-gradient(315deg, rgba(249, 115, 22, 0.08), transparent 32%),
+        var(--bg);
+      color: var(--text);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      line-height: 1.45;
+      min-height: 100vh;
+      padding: 56px 24px;
+    }
+    body::before {
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      content: '';
+      height: 6px;
+      left: 0;
+      opacity: 0.95;
+      position: fixed;
+      top: 0;
+      width: 100%;
+      z-index: 10;
+    }
+    main {
+      margin: 0 auto;
+      max-width: 880px;
+    }
+    .eyebrow {
+      color: var(--accent);
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      margin: 0 0 18px;
+      text-transform: uppercase;
+    }
+    h1 {
+      font-size: 56px;
+      font-weight: 800;
+      letter-spacing: 0;
+      line-height: 1.05;
+      margin: 0 0 18px;
+      max-width: 740px;
+    }
+    p.lead {
+      color: var(--muted);
+      font-size: 22px;
+      line-height: 1.35;
+      max-width: 760px;
+      margin: 0 0 56px;
+    }
+    .decks {
+      display: grid;
+      gap: 24px;
+      grid-template-columns: 1fr;
+    }
+    @media (min-width: 720px) {
+      .decks { grid-template-columns: 1fr 1fr; }
+    }
+    a.deck {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      color: var(--text);
+      display: block;
+      padding: 28px 28px 24px;
+      text-decoration: none;
+      transition: border-color 0.2s ease, transform 0.15s ease;
+    }
+    a.deck:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+    a.deck h2 {
+      color: var(--text);
+      font-size: 30px;
+      font-weight: 800;
+      letter-spacing: 0;
+      line-height: 1.1;
+      margin: 0 0 10px;
+    }
+    a.deck .meta {
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      margin: 0 0 14px;
+      text-transform: uppercase;
+    }
+    a.deck p {
+      color: var(--muted);
+      font-size: 17px;
+      margin: 0;
+    }
+    a.deck .cta {
+      color: var(--accent);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 700;
+      margin-top: 18px;
+    }
+    a.deck .cta::after {
+      content: '\2192';
+      font-family: 'JetBrains Mono', monospace;
+    }
+    footer {
+      color: var(--subtle);
+      font-size: 13px;
+      margin-top: 56px;
+      max-width: 760px;
+    }
+    footer a { color: var(--accent); text-decoration: none; }
+    code {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.9em;
+      padding: 0 0.32em;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <p class="eyebrow">Temporal Training</p>
+    <h1>Slides for a 24-hour Java Temporal course.</h1>
+    <p class="lead">Two decks, one course. Built with <a href="https://marp.app">Marp</a>. Source lives in <code>slides/</code> in the course repo.</p>
+
+    <section class="decks">
+      <a class="deck" href="./why-temporal/">
+        <p class="meta">Day 0 &middot; ~25 min</p>
+        <h2>Why Temporal</h2>
+        <p>Persuasive intro for engineers and their managers. The orchestration problem, where today's tools break, and what durable execution changes.</p>
+        <p class="cta">Open deck</p>
+      </a>
+
+      <a class="deck" href="./temporal-fundamentals/">
+        <p class="meta">Core &middot; ~3 hrs</p>
+        <h2>Temporal Fundamentals</h2>
+        <p>Java-first technical deck. Mental model, architecture, the SDK primitives, sagas, versioning, testing, and a production checklist.</p>
+        <p class="cta">Open deck</p>
+      </a>
+    </section>
+
+    <footer>
+      Course materials: <a href="https://github.com/CoderMana/temporal-training">github.com/CoderMana/temporal-training</a>
+    </footer>
+  </main>
+</body>
+</html>
